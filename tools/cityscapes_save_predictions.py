@@ -75,15 +75,17 @@ def main():
             is_background = (sem < 11) | (sem == 255)
             pan_pred = pan_pred.numpy() 
             pan_pred[is_background] = 0
+            # Our test case expects the raw segmented color image.
+            # Uncomment the below code to produce the overlayed image instead.
+            # contours = find_boundaries(pan_pred, mode="outer", background=0).astype(np.uint8) * 255
+            # contours = dilation(contours)
 
-            contours = find_boundaries(pan_pred, mode="outer", background=0).astype(np.uint8) * 255
-            contours = dilation(contours)
+            # contours = np.expand_dims(contours, -1).repeat(4, -1)
+            # contours_img = Image.fromarray(contours, mode="RGBA")
 
-            contours = np.expand_dims(contours, -1).repeat(4, -1)
-            contours_img = Image.fromarray(contours, mode="RGBA")
-
-            out = Image.blend(img, sem_img, 0.5).convert(mode="RGBA")
-            out = Image.alpha_composite(out, contours_img)
+            # out = Image.blend(img, sem_img, 0.5).convert(mode="RGBA")
+            # out = Image.alpha_composite(out, contours_img)
+            out = sem_img
             out.convert(mode="RGB").save(out_path)
 
             prog_bar.update()   
