@@ -1,3 +1,22 @@
+# Running in Docker
+This fork provides a docker containarization and edits to directly output the semantic segmentation color images for cityscapes. First, [download](http://panoptic.cs.uni-freiburg.de/static/models/efficientPS_cityscapes.zip) the pre-trained cityscapes model (same link as below).
+To set up, build the docker image:
+```bash
+$ cd ~/git/EfficientPS/
+$ docker build -t efficientps-semantic-segmentation -f Dockerfile .
+```
+However, this does not fully build dependencies because some of them must be built in a GPU environment. During the first run of this container, you must execute the following from the directory that the repository is mounted at.
+```bash
+$ pip3 install git+https://github.com/mapillary/inplace_abn.git && cd ./efficientNet && python setup.py develop && cd .. && python setup.py develop
+```
+This can safely be executed every time on startup; if it has already been done the cache will quickly exit.
+The following command will start the image, install dependencies, and run the system. Be sure to update the model path, input folder, and output folder for your system.
+```bash
+$ cd ~/git/EfficientPS/
+$ nvidia-docker run --ipc=host -v "$(pwd):$(pwd)" efficientps-semantic-segmentation "pip3 install git+https://github.com/mapillary/inplace_abn.git && cd $(pwd)/efficientNet && python setup.py develop && cd .. && python setup.py develop && python tools/cityscapes_save_predictions.py ./configs/efficientPS_singlegpu_sample.py ./checkpoints/efficientPS_cityscapes/model/model.pth ./input_imgs ./output_imgs"
+```
+
+
 # EfficientPS: Efficient Panoptic Segmentation
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/efficientps-efficient-panoptic-segmentation/panoptic-segmentation-on-cityscapes-val)](https://paperswithcode.com/sota/panoptic-segmentation-on-cityscapes-val?p=efficientps-efficient-panoptic-segmentation) 
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/efficientps-efficient-panoptic-segmentation/panoptic-segmentation-on-cityscapes-test)](https://paperswithcode.com/sota/panoptic-segmentation-on-cityscapes-test?p=efficientps-efficient-panoptic-segmentation)
