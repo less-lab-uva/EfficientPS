@@ -60,21 +60,21 @@ def main():
             result = inference_detector(model, os.path.join(path, imgName), eval='panoptic')
             pan_pred, cat_pred, _ = result[0]
 
-            imageId = imgName.replace("_leftImg8bit.png", "")
-            inputFileName = imgName
+            # imageId = imgName.replace("_leftImg8bit.png", "")
+            # inputFileName = imgName
             outputFileName = imgName.replace("_leftImg8bit.png", "_panoptic.png")
 
-            img = Image.open(os.path.join(path, imgName))
+            # img = Image.open(os.path.join(path, imgName))
             out_path = os.path.join(out_dir, outputFileName)
 
             sem = cat_pred[pan_pred].numpy()
             sem_tmp = sem.copy()
-            sem_tmp[sem==255] = colors.shape[0] - 1
+            sem_tmp[sem == 255] = colors.shape[0] - 1
             sem_img = Image.fromarray(colors[sem_tmp])
 
-            is_background = (sem < 11) | (sem == 255)
-            pan_pred = pan_pred.numpy() 
-            pan_pred[is_background] = 0
+            # is_background = (sem < 11) | (sem == 255)
+            # pan_pred = pan_pred.numpy()
+            # pan_pred[is_background] = 0
             # Our test case expects the raw segmented color image.
             # Uncomment the below code to produce the overlayed image instead.
             # contours = find_boundaries(pan_pred, mode="outer", background=0).astype(np.uint8) * 255
@@ -89,6 +89,7 @@ def main():
             out.convert(mode="RGB").save(out_path)
 
             prog_bar.update()   
+
 
 if __name__ == '__main__':
     main()
