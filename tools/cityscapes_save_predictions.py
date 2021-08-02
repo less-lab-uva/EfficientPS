@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 
 import mmcv
 import torch
@@ -46,8 +47,10 @@ def main():
     if not os.path.exists(args.out):
         os.mkdir(args.out)
 
-    PALETTE.append([0,0,0])
+    PALETTE.append([0, 0, 0])
     colors = np.array(PALETTE, dtype=np.uint8)
+    PALETTE.extend([[0, 0, 0]] * (256 - len(PALETTE)))
+    rgb_palette = [val for rgbs in PALETTE for val in rgbs]
 
     for city in os.listdir(args.input):
         path = os.path.join(args.input, city)
@@ -70,23 +73,9 @@ def main():
             sem = cat_pred[pan_pred].numpy()
             sem_tmp = sem.copy()
             sem_tmp[sem == 255] = colors.shape[0] - 1
-            sem_img = Image.fromarray(colors[sem_tmp])
-
-            # is_background = (sem < 11) | (sem == 255)
-            # pan_pred = pan_pred.numpy()
-            # pan_pred[is_background] = 0
-            # Our test case expects the raw segmented color image.
-            # Uncomment the below code to produce the overlayed image instead.
-            # contours = find_boundaries(pan_pred, mode="outer", background=0).astype(np.uint8) * 255
-            # contours = dilation(contours)
-
-            # contours = np.expand_dims(contours, -1).repeat(4, -1)
-            # contours_img = Image.fromarray(contours, mode="RGBA")
-
-            # out = Image.blend(img, sem_img, 0.5).convert(mode="RGBA")
-            # out = Image.alpha_composite(out, contours_img)
-            out = sem_img
-            out.convert(mode="RGB").save(out_path)
+            sem_img = Image.fromarray(sem_tmp.astype(np.uint8)).convert('P')
+            sem_img.putpalette(rgb_palette)
+            sem_img.save(out_path)
 
             prog_bar.update()   
 
